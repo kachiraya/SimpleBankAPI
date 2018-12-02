@@ -38,5 +38,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	user.StartServer(":"+os.Getenv("PORT"), db)
+	err = user.StartServer(":"+os.Getenv("PORT"), db)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
