@@ -8,7 +8,7 @@ import (
 )
 
 type BankingService interface {
-	GetBankAccounts(id int) error
+	GetBankAccounts(id int) ([]*BankAccount, error)
 	GetBankAccount(id int) (*BankAccount, error)
 	DeleteBankAccount(id int) error
 	Withdraw(amount float64, id int) error
@@ -17,7 +17,7 @@ type BankingService interface {
 }
 
 type BankingHandler struct {
-	bankingService BankService
+	BankingService BankingService
 }
 
 func (bh *BankingHandler) getBankAccounts(c *gin.Context) {
@@ -27,7 +27,7 @@ func (bh *BankingHandler) getBankAccounts(c *gin.Context) {
 		return
 	}
 
-	accounts, err := bh.bankingService.GetBankAccounts(id)
+	accounts, err := bh.BankingService.GetBankAccounts(id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -51,7 +51,7 @@ func (bh *BankingHandler) withdraw(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err = bh.bankingService.Withdraw(update.Amount, id)
+	err = bh.BankingService.Withdraw(update.Amount, id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -65,7 +65,7 @@ func (bh *BankingHandler) deleteBankAccount(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	err = bh.bankingService.DeleteBankAccount(id)
+	err = bh.BankingService.DeleteBankAccount(id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
@@ -85,7 +85,7 @@ func (bh *BankingHandler) transfers(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err = bh.bankingService.Transfer(update.AccIdFrom, update.AccIdTo, update.Amount)
+	err = bh.BankingService.Transfer(update.AccIdFrom, update.AccIdTo, update.Amount)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -108,7 +108,7 @@ func (bh *BankingHandler) deposit(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err = bh.bankingService.Deposit(update.Amount, id)
+	err = bh.BankingService.Deposit(update.Amount, id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

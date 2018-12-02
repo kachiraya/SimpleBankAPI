@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"simplebankapi/user/bankaccount"
+	"simplebankapi-heroku/user/bankaccount"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -156,7 +156,7 @@ func StartServer(addr string, db *sql.DB) error {
 		},
 	}
 	bh := &bankaccount.BankingHandler{
-		bankingService: &bankaccount.BankingService{
+		BankingService: bankaccount.BankService{
 			DB: db,
 		},
 	}
