@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
-	"simplebankapi/user"
+	"simplebankapi-heroku/user"
 
 	_ "github.com/lib/pq"
 )
