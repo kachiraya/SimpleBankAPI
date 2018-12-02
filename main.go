@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bankapi/user"
 	"database/sql"
 	"log"
 	"os"
+	"simplebankapi/user"
 
 	_ "github.com/lib/pq"
 )

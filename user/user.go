@@ -1,6 +1,9 @@
 package user
 
-import "database/sql"
+import (
+	"database/sql"
+	"simplebankapi/user/bankaccount"
+)
 
 type Service struct {
 	DB *sql.DB
@@ -70,5 +73,13 @@ func (s *Service) Update(u *User) error {
 func (s *Service) Delete(u *User) error {
 	stmt := "DELETE FROM users WHERE id = $1"
 	_, err := s.DB.Exec(stmt, u.ID)
+	return err
+}
+
+func (s *Service) AddBankAccount(acc *bankaccount.BankAccount) error {
+	stmt := `INSERT INTO bankaccounts(user_id, account_no, name, balance)
+		 values ($1, $2, $3, $4) RETURNING id`
+	row := s.DB.QueryRow(stmt, acc.UserID, acc.AccountNumber, acc.Name, acc.Balance)
+	err := row.Scan(&acc.ID)
 	return err
 }

@@ -1,10 +1,10 @@
 package user
 
 import (
-	"bankapi/user/bankaccount"
 	"database/sql"
 	"fmt"
 	"net/http"
+	"simplebankapi/user/bankaccount"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +16,7 @@ type UserService interface {
 	Insert(u *User) error
 	Update(u *User) error
 	Delete(u *User) error
+	AddBankAccount(acc *bankaccount.BankAccount) error
 }
 
 type Handler struct {
@@ -138,7 +139,7 @@ func (h *Handler) addBankAccount(c *gin.Context) {
 	acc.Balance = 0
 	acc.Name = fmt.Sprintf("%s %s", user.FirstName, user.LastName)
 	acc.AccountNumber = "125635" //To be implemented: generate unique acc no.
-	err = h.bankingService.AddBankAccount(&acc)
+	err = h.userService.AddBankAccount(&acc)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -155,7 +156,7 @@ func StartServer(addr string, db *sql.DB) error {
 		},
 	}
 	bh := &bankaccount.BankingHandler{
-		bankingService: &bankaccount.BankService{
+		bankingService: &bankaccount.BankingService{
 			DB: db,
 		},
 	}

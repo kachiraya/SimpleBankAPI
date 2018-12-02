@@ -14,14 +14,6 @@ type BankService struct {
 	DB *sql.DB
 }
 
-func (s *BankService) AddBankAccount(acc *BankAccount) error {
-	stmt := `INSERT INTO bankaccounts(user_id, account_no, name, balance)
-		 values ($1, $2, $3, $4) RETURNING id`
-	row := s.DB.QueryRow(stmt, acc.UserID, acc.AccountNumber, acc.Name, acc.Balance)
-	err := row.Scan(&acc.ID)
-	return err
-}
-
 func (s *BankService) GetBankAccounts(id int) ([]BankAccount, error) {
 	stmt := "SELECT * FROM bankaccounts WHERE user_id = $1 ORDER BY id DESC"
 	rows, err := s.DB.Query(stmt, id)
@@ -84,11 +76,11 @@ func (s *BankService) DeleteBankAccount(id int) error {
 	return err
 }
 
-func (s *BankService) Transfer(accFrom *BankAccount, accTo *BankAccount, amount float64) error {
-	err := s.Withdraw(amount, accFrom.ID)
+func (s *BankService) Transfer(accIDFrom int, accIDTo int, amount float64) error {
+	err := s.Withdraw(amount, accIDFrom)
 	if err != nil {
 		return err
 	}
-	err = s.Deposit(amount, accTo.ID)
+	err = s.Deposit(amount, accIDTo)
 	return err
 }

@@ -8,12 +8,12 @@ import (
 )
 
 type BankingService interface {
-	AddBankAccount(acc *BankAccount) error
 	GetBankAccounts(id int) error
-	DeleteBankAccount(acc *BankAccount) error
-	Withdraw(acc *BankAccount, amount float64) error
-	Deposit(acc *BankAccount, amount float64) error
-	Transfer(accFrom *BankAccount, accTo *BankAccount, amount float64) error
+	GetBankAccount(id int) (*BankAccount, error)
+	DeleteBankAccount(id int) error
+	Withdraw(amount float64, id int) error
+	Deposit(amount float64, id int) error
+	Transfer(accIDFrom int, accIDTo int, amount float64) error
 }
 
 type BankingHandler struct {
@@ -85,19 +85,7 @@ func (bh *BankingHandler) transfers(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	accFrom, err := bh.bankingService.GetBankAccount(update.AccIdFrom)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
-	accTo, err := bh.bankingService.GetBankAccount(update.AccIdFrom)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
-	err = bh.bankingService.Transfer(accFrom, accTo, update.Amount)
+	err = bh.bankingService.Transfer(update.AccIdFrom, update.AccIdTo, update.Amount)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
