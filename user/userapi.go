@@ -19,8 +19,18 @@ type UserService interface {
 	AddBankAccount(acc *bankaccount.BankAccount) error
 }
 
+type BankingService interface {
+	GetBankAccounts(id int) ([]bankaccount.BankAccount, error)
+	GetBankAccount(id int) (*bankaccount.BankAccount, error)
+	DeleteBankAccount(id int) error
+	Withdraw(amount float64, id int) error
+	Deposit(amount float64, id int) error
+	Transfer(accIDFrom int, accIDTo int, amount float64) error
+}
+
 type Handler struct {
-	userService UserService
+	userService    UserService
+	bankingService BankingService
 }
 
 func (h *Handler) allUser(c *gin.Context) {
@@ -148,15 +158,107 @@ func (h *Handler) addBankAccount(c *gin.Context) {
 	c.JSON(http.StatusCreated, acc)
 }
 
+func (bh *Handler) getBankAccounts(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	accounts, err := bh.bankingService.GetBankAccounts(id)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, accounts)
+}
+
+func (bh *Handler) withdraw(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var update struct {
+		Amount float64 `json:"amount" binding:"required"`
+	}
+	err = c.ShouldBindJSON(&update)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+	err = bh.bankingService.Withdraw(update.Amount, id)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, "Withdraw success")
+}
+
+func (bh *Handler) deleteBankAccount(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	err = bh.bankingService.DeleteBankAccount(id)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+	c.JSON(http.StatusOK, "Bank Account Deleted")
+}
+
+func (bh *Handler) transfers(c *gin.Context) {
+
+	var update struct {
+		Amount    float64 `json:"amount" binding:"required"`
+		AccIdFrom int     `json:"from" binding:"required"`
+		AccIdTo   int     `json:"to" binding:"required"`
+	}
+
+	err := c.ShouldBindJSON(&update)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	err = bh.bankingService.Transfer(update.AccIdFrom, update.AccIdTo, update.Amount)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, "Transfers success")
+}
+
+func (bh *Handler) deposit(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var update struct {
+		Amount float64 `json:"amount" binding:"required"`
+	}
+	err = c.ShouldBindJSON(&update)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+	err = bh.bankingService.Deposit(update.Amount, id)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, "Deposit Success")
+}
+
 func StartServer(addr string, db *sql.DB) error {
 	r := gin.Default()
 	h := &Handler{
 		userService: &Service{
 			DB: db,
 		},
-	}
-	bh := &bankaccount.BankingHandler{
-		bankingServices: &bankaccount.BankService{
+		bankingService: &bankaccount.BankService{
 			DB: db,
 		},
 	}
@@ -167,11 +269,11 @@ func StartServer(addr string, db *sql.DB) error {
 	r.PUT("/users/:id", h.updateUser)
 	r.DELETE("/users/:id", h.deleteUser)
 	r.POST("/users/:id/bankAccounts", h.addBankAccount)
-	r.GET("/users/:id/bankAccounts", bh.getBankAccounts)
-	r.DELETE("/bankAccounts/:id", bh.deleteBankAccount)
-	r.PUT("/bankAccounts/:id/withdraw", bh.withdraw)
-	r.PUT("/bankAccounts/:id/deposit", bh.deposit)
-	r.POST("/transfers", bh.transfers)
+	r.GET("/users/:id/bankAccounts", h.getBankAccounts)
+	r.DELETE("/bankAccounts/:id", h.deleteBankAccount)
+	r.PUT("/bankAccounts/:id/withdraw", h.withdraw)
+	r.PUT("/bankAccounts/:id/deposit", h.deposit)
+	r.POST("/transfers", h.transfers)
 
 	return r.Run(addr)
 }
