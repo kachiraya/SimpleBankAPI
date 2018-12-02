@@ -17,7 +17,7 @@ type BankingService interface {
 }
 
 type BankingHandler struct {
-	BankingService BankingService
+	bankingServices BankingService
 }
 
 func (bh *BankingHandler) getBankAccounts(c *gin.Context) {
@@ -27,7 +27,7 @@ func (bh *BankingHandler) getBankAccounts(c *gin.Context) {
 		return
 	}
 
-	accounts, err := bh.BankingService.GetBankAccounts(id)
+	accounts, err := bh.bankingServices.GetBankAccounts(id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -51,7 +51,7 @@ func (bh *BankingHandler) withdraw(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err = bh.BankingService.Withdraw(update.Amount, id)
+	err = bh.bankingServices.Withdraw(update.Amount, id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -65,7 +65,7 @@ func (bh *BankingHandler) deleteBankAccount(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	err = bh.BankingService.DeleteBankAccount(id)
+	err = bh.bankingServices.DeleteBankAccount(id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
@@ -85,7 +85,7 @@ func (bh *BankingHandler) transfers(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err = bh.BankingService.Transfer(update.AccIdFrom, update.AccIdTo, update.Amount)
+	err = bh.bankingServices.Transfer(update.AccIdFrom, update.AccIdTo, update.Amount)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -108,7 +108,7 @@ func (bh *BankingHandler) deposit(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err = bh.BankingService.Deposit(update.Amount, id)
+	err = bh.bankingServices.Deposit(update.Amount, id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
