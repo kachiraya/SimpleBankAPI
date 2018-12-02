@@ -2,7 +2,7 @@ package user
 
 import (
 	"database/sql"
-	"simplebankapi-heroku/bankaccount"
+	"simplebankapi-heroku/user/bankaccount"
 )
 
 type Service struct {

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"simplebankapi-heroku/bankaccount"
+	"simplebankapi-heroku/user/bankaccount"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
